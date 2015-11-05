@@ -1,6 +1,7 @@
 package org.asuki.tool.modelmapper;
 
 import static org.testng.Assert.assertEquals;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,8 +15,8 @@ public class FlatteningATest {
     public void shouldOrder2OrderDto() {
         // @formatter:off
         Order order = new Order(
-                new Customer("Andy"), 
-                new Address("1 Main Street", "Seattle"), 
+                new Customer("Andy"),
+                new Address("1 Main Street", "Seattle"),
                 new Address("2 Main Street", "San Francisco"));
         // @formatter:on
 
@@ -24,19 +25,19 @@ public class FlatteningATest {
 
         // @formatter:off
         assertEquals(
-                dto.getCustomerName(), 
+                dto.getCustomerName(),
                 order.getCustomer().getName());
         assertEquals(
-                dto.getShippingStreetAddress(), 
+                dto.getShippingStreetAddress(),
                 order.getShippingAddress().getStreet());
         assertEquals(
-                dto.getShippingCity(), 
+                dto.getShippingCity(),
                 order.getShippingAddress().getCity());
         assertEquals(
-                dto.getBillingStreetAddress(), 
+                dto.getBillingStreetAddress(),
                 order.getBillingAddress().getStreet());
         assertEquals(
-                dto.getBillingCity(), 
+                dto.getBillingCity(),
                 order.getBillingAddress().getCity());
         // @formatter:on
     }

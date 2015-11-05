@@ -2,6 +2,7 @@ package org.asuki.tool.modelmapper;
 
 import static org.modelmapper.convention.MatchingStrategies.LOOSE;
 import static org.testng.Assert.assertEquals;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -47,7 +48,7 @@ public class ProjectionBTest {
 
     @DataProvider(name = "mappers")
     private Object[][] mappers() {
-        return new Object[][] { { createOption1() }, { createOption2() } };
+        return new Object[][]{{createOption1()}, {createOption2()}};
     }
 
     private ModelMapper createOption1() {

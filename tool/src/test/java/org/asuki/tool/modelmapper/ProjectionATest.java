@@ -1,6 +1,7 @@
 package org.asuki.tool.modelmapper;
 
 import static org.testng.Assert.assertEquals;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,7 @@ public class ProjectionATest {
 
         // @formatter:off
         assertEquals(
-                order.getCustomer().getName(), 
+                order.getCustomer().getName(),
                 dto.getCustomerName());
         assertEquals(
                 order.getAddress().getStreet(),
