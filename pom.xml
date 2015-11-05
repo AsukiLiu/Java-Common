@@ -13,6 +13,8 @@
 
     <modules>
         <module>design-pattern</module>
+        <module>javase</module>
+        <module>tool</module>
     </modules>
 
     <properties>
@@ -42,6 +44,16 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.9-RC2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>0.7.2</version>
         </dependency>
         <!-- Test -->
         <dependency>
