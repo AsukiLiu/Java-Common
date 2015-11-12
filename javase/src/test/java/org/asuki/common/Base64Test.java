@@ -1,7 +1,7 @@
 package org.asuki.common;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.MatcherAssert.*;
 import static com.google.common.io.BaseEncoding.base64;
 import static com.google.common.io.BaseEncoding.base64Url;
 import static java.util.Base64.getDecoder;
@@ -11,6 +11,7 @@ import static java.util.Base64.getUrlEncoder;
 import static org.apache.commons.codec.binary.Base64.encodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64Chunked;
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafe;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -65,5 +66,7 @@ public class Base64Test {
 
         assertThat(Arrays.equals(java8BasicEncoded, guavaBasicEncoded), is(true));
         assertThat(Arrays.equals(java8BasicEncoded, guavaUrlEncoded), is(true));
+
+        assertThat(new String(decodeBase64(commonsBasicEncoded)), is(TEXT));
     }
 }
