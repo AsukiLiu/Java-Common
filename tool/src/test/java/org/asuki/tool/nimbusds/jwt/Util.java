@@ -2,6 +2,8 @@ package org.asuki.tool.nimbusds.jwt;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
@@ -20,12 +22,18 @@ public final class Util {
     private Util() {
     }
 
-    public static byte[] generateSharedSecret() {
-        // Generate random 256-bit (32-byte) shared secret
-        byte[] sharedSecret = new byte[32];
+    // 256-bit (32-byte), 128-bit (16-byte)
+    public static byte[] generateSharedSecret(int bytes) {
+        byte[] sharedSecret = new byte[bytes];
         new SecureRandom().nextBytes(sharedSecret);
 
         return sharedSecret;
+    }
+
+    public static SecretKey generateSecretKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        keyGen.init(256);
+        return keyGen.generateKey();
     }
 
     public static Pair<RSAPublicKey, RSAPrivateKey> generateRsaKeyPair() throws NoSuchAlgorithmException {
@@ -43,6 +51,7 @@ public final class Util {
 
         KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("EC");
         keyGenerator.initialize(generateECParameterSpec());
+//        keyGenerator.initialize(571);
 
         KeyPair keyPair = keyGenerator.generateKeyPair();
 

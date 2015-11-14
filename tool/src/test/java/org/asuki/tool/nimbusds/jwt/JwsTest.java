@@ -21,7 +21,7 @@ public class JwsTest {
 
     @Test
     public void testWithHmacProtection() throws Exception {
-        byte[] sharedSecret = Util.generateSharedSecret();
+        byte[] sharedSecret = Util.generateSharedSecret(32);
 
         String jwsString = produceSignedJws(sharedSecret);
         out.println(jwsString);

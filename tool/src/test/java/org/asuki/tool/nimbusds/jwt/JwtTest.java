@@ -9,6 +9,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang3.tuple.Pair;
 import org.testng.annotations.Test;
 
+import javax.crypto.SecretKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -29,7 +30,7 @@ public class JwtTest {
 
     @Test
     public void testWithHmacProtection() throws Exception {
-        byte[] sharedSecret = Util.generateSharedSecret();
+        byte[] sharedSecret = Util.generateSharedSecret(32);
 
         String jwtString = produceSignedJwt(sharedSecret);
         out.println(jwtString);
@@ -51,7 +52,7 @@ public class JwtTest {
         assertJWTClaimsSet(jwtClaims);
     }
 
-    //    @Test
+    //        @Test
     public void testWithEcSignature() throws Exception {
         Pair<ECPublicKey, ECPrivateKey> keyPair = Util.generateEcKeyPair();
 
@@ -71,6 +72,18 @@ public class JwtTest {
         out.println(jwtString);
 
         JWTClaimsSet jwtClaims = consumeEncryptedJwt(jwtString, keyPair.getRight());
+
+        assertJWTClaimsSet(jwtClaims);
+    }
+
+    @Test
+    public void testWithAesEncryption() throws Exception {
+        SecretKey secretKey = Util.generateSecretKey();
+
+        String jweString = produceEncryptedJwt(secretKey);
+        out.println(jweString);
+
+        JWTClaimsSet jwtClaims = consumeEncryptedJwt(jweString, secretKey);
 
         assertJWTClaimsSet(jwtClaims);
     }
@@ -206,4 +219,37 @@ public class JwtTest {
                 .expirationTime(new Date(new Date().getTime() + 60 * 1000))
                 .build();
     }
+
+    private static String produceEncryptedJwt(SecretKey secretKey) throws JOSEException {
+        JWSSigner signer = new MACSigner(secretKey.getEncoded());
+
+        JWTClaimsSet claimsSet = generateJWTClaimsSet();
+
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
+
+        signedJWT.sign(signer);
+
+        JWEObject jweObject = new JWEObject(
+                new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM)
+                        .contentType("JWT") // signal nested JWT
+                        .build(),
+                new Payload(signedJWT));
+
+        jweObject.encrypt(new DirectEncrypter(secretKey.getEncoded()));
+
+        return jweObject.serialize();
+    }
+
+    private static JWTClaimsSet consumeEncryptedJwt(String jweString, SecretKey secretKey) throws JOSEException, ParseException {
+        JWEObject jweObject = JWEObject.parse(jweString);
+
+        jweObject.decrypt(new DirectDecrypter(secretKey.getEncoded()));
+
+        SignedJWT signedJWT = jweObject.getPayload().toSignedJWT();
+
+        assertThat(signedJWT.verify(new MACVerifier(secretKey.getEncoded())), is(true));
+
+        return signedJWT.getJWTClaimsSet();
+    }
+
 }
