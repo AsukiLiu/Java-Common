@@ -2,6 +2,7 @@ package org.asuki.tool.nimbusds.jwt;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.*;
+import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.crypto.KeyGenerator;
@@ -16,13 +17,22 @@ import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
+import java.util.Arrays;
+import java.util.Date;
 
+import static java.lang.System.out;
 import static java.math.BigInteger.ZERO;
 import static java.math.BigInteger.valueOf;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public final class Util {
     private Util() {
     }
+
+    private static final String SUBJECT = "andy";
+    private static final String ISSUER = "https://example.org";
 
     // 256-bit (32-byte), 128-bit (16-byte)
     public static byte[] generateSharedSecret(int bytes) {
@@ -80,5 +90,27 @@ public final class Util {
                 {JWSAlgorithm.RS256, new RSASSASigner(rsaKeyPair.getRight()), new RSASSAVerifier(rsaKeyPair.getLeft())},
 //                {JWSAlgorithm.ES256, new ECDSASigner(ecKeyPair.getRight()), new ECDSAVerifier(ecKeyPair.getLeft())},
         };
+    }
+
+    public static void assertJWTClaimsSet(JWTClaimsSet jwtClaims) {
+        assertThat(jwtClaims.getSubject(), is(SUBJECT));
+        assertThat(jwtClaims.getIssuer(), is(ISSUER));
+        assertThat(new Date().before(jwtClaims.getExpirationTime()), is(true));
+    }
+
+    public static JWTClaimsSet generateJWTClaimsSet() {
+        JWTClaimsSet jwtClaims = new JWTClaimsSet.Builder()
+                .subject(SUBJECT)
+                .issuer(ISSUER)
+                .audience(Arrays.<String>asList("https://app-one.com", "https://app-two.com"))
+                .expirationTime(new Date(new Date().getTime() + 60 * 1000))
+                .notBeforeTime(new Date())
+                .issueTime(new Date())
+                .jwtID(randomUUID().toString())
+                .build();
+
+        out.println(jwtClaims.toJSONObject());
+
+        return jwtClaims;
     }
 }

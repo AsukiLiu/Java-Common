@@ -25,7 +25,7 @@ public class JwsTest {
     }
 
     @DataProvider
-    public Object[][] data() throws Exception {
+    private Object[][] data() throws Exception {
         return Util.data();
     }
 
