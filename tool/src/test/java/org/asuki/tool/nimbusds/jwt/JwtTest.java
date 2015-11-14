@@ -7,11 +7,10 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTClaimsSet.Builder;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang3.tuple.Pair;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import javax.crypto.SecretKey;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
@@ -28,40 +27,20 @@ public class JwtTest {
     private static final String SUBJECT = "andy";
     private static final String ISSUER = "https://example.org";
 
-    @Test
-    public void testWithHmacProtection() throws Exception {
-        byte[] sharedSecret = Util.generateSharedSecret(32);
+    @Test(dataProvider = "data")
+    public void testWithSignature(
+            JWSAlgorithm algorithm, JWSSigner signer, JWSVerifier verifier) throws Exception {
 
-        String jwtString = produceSignedJwt(sharedSecret);
-        out.println(jwtString);
+        String jwtString = produceSignedJwt(algorithm, signer);
 
-        JWTClaimsSet jwtClaims = consumeSignedJwt(jwtString, sharedSecret);
-
-        assertJWTClaimsSet(jwtClaims);
-    }
-
-    @Test
-    public void testWithRsaSignature() throws Exception {
-        Pair<RSAPublicKey, RSAPrivateKey> keyPair = Util.generateRsaKeyPair();
-
-        String jwsString = produceSignedJws(keyPair.getRight());
-        out.println(jwsString);
-
-        JWTClaimsSet jwtClaims = consumeSignedJws(jwsString, keyPair.getLeft());
+        JWTClaimsSet jwtClaims = consumeSignedJwt(jwtString, verifier);
 
         assertJWTClaimsSet(jwtClaims);
     }
 
-    //        @Test
-    public void testWithEcSignature() throws Exception {
-        Pair<ECPublicKey, ECPrivateKey> keyPair = Util.generateEcKeyPair();
-
-        String jwsString = produceSignedJws(keyPair.getRight());
-        out.println(jwsString);
-
-        JWTClaimsSet jwtClaims = consumeSignedJws(jwsString, keyPair.getLeft());
-
-        assertJWTClaimsSet(jwtClaims);
+    @DataProvider
+    public Object[][] data() throws Exception {
+        return Util.data();
     }
 
     @Test
@@ -69,7 +48,6 @@ public class JwtTest {
         Pair<RSAPublicKey, RSAPrivateKey> keyPair = Util.generateRsaKeyPair();
 
         String jwtString = produceEncryptedJwt(keyPair.getLeft());
-        out.println(jwtString);
 
         JWTClaimsSet jwtClaims = consumeEncryptedJwt(jwtString, keyPair.getRight());
 
@@ -81,91 +59,10 @@ public class JwtTest {
         SecretKey secretKey = Util.generateSecretKey();
 
         String jweString = produceEncryptedJwt(secretKey);
-        out.println(jweString);
 
         JWTClaimsSet jwtClaims = consumeEncryptedJwt(jweString, secretKey);
 
         assertJWTClaimsSet(jwtClaims);
-    }
-
-    private static String produceSignedJwt(byte[] sharedSecret) throws JOSEException {
-
-        JWSSigner signer = new MACSigner(sharedSecret);
-
-        JWTClaimsSet jwtClaims = generateJWTClaimsSet();
-
-        out.println(jwtClaims.toJSONObject());
-
-        SignedJWT signedJWT = new SignedJWT(
-                new JWSHeader(JWSAlgorithm.HS256),
-                jwtClaims);
-
-        // Apply the HMAC protection
-        signedJWT.sign(signer);
-
-        return signedJWT.serialize();
-    }
-
-    private static JWTClaimsSet consumeSignedJwt(String jwtString, byte[] sharedSecret)
-            throws ParseException, JOSEException {
-
-        SignedJWT signedJWT = SignedJWT.parse(jwtString);
-
-        JWSVerifier verifier = new MACVerifier(sharedSecret);
-
-        assertThat(signedJWT.verify(verifier), is(true));
-
-        return signedJWT.getJWTClaimsSet();
-    }
-
-    private static String produceSignedJws(RSAPrivateKey privateKey) throws JOSEException {
-        JWSSigner signer = new RSASSASigner(privateKey);
-
-        JWTClaimsSet jwtClaims = generateJWTClaimsSet();
-
-        SignedJWT signedJWT = new SignedJWT(
-                new JWSHeader(JWSAlgorithm.RS256),
-                jwtClaims);
-
-        signedJWT.sign(signer);
-
-        return signedJWT.serialize();
-    }
-
-    private static JWTClaimsSet consumeSignedJws(String jwtString, RSAPublicKey publicKey)
-            throws JOSEException, ParseException {
-
-        SignedJWT signedJWT = SignedJWT.parse(jwtString);
-
-        JWSVerifier verifier = new RSASSAVerifier(publicKey);
-
-        assertThat(signedJWT.verify(verifier), is(true));
-
-        return signedJWT.getJWTClaimsSet();
-    }
-
-    private static String produceSignedJws(ECPrivateKey privateKey) throws JOSEException {
-        JWSSigner signer = new ECDSASigner(privateKey);
-
-        JWTClaimsSet jwtClaims = generateJWTClaimsSet();
-
-        SignedJWT signedJWT = new SignedJWT(
-                new JWSHeader(JWSAlgorithm.ES256),
-                jwtClaims);
-
-        signedJWT.sign(signer);
-
-        return signedJWT.serialize();
-    }
-
-    private static JWTClaimsSet consumeSignedJws(String jwtString, ECPublicKey publicKey) throws ParseException, JOSEException {
-        SignedJWT signedJWT = SignedJWT.parse(jwtString);
-
-        JWSVerifier verifier = new ECDSAVerifier(publicKey);
-
-        assertThat(signedJWT.verify(verifier), is(true));
-
-        return signedJWT.getJWTClaimsSet();
     }
 
     private static String produceEncryptedJwt(RSAPublicKey publicKey) throws JOSEException {
@@ -213,20 +110,24 @@ public class JwtTest {
     }
 
     private static JWTClaimsSet generateJWTClaimsSet() {
-        return new Builder()
+        JWTClaimsSet jwtClaims = new Builder()
                 .subject(SUBJECT)
                 .issuer(ISSUER)
                 .expirationTime(new Date(new Date().getTime() + 60 * 1000))
                 .build();
+
+        out.println(jwtClaims.toJSONObject());
+
+        return jwtClaims;
     }
 
     private static String produceEncryptedJwt(SecretKey secretKey) throws JOSEException {
+
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader(JWSAlgorithm.HS256),
+                generateJWTClaimsSet());
+
         JWSSigner signer = new MACSigner(secretKey.getEncoded());
-
-        JWTClaimsSet claimsSet = generateJWTClaimsSet();
-
-        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
-
         signedJWT.sign(signer);
 
         JWEObject jweObject = new JWEObject(
@@ -235,7 +136,8 @@ public class JwtTest {
                         .build(),
                 new Payload(signedJWT));
 
-        jweObject.encrypt(new DirectEncrypter(secretKey.getEncoded()));
+        JWEEncrypter encrypter = new DirectEncrypter(secretKey.getEncoded());
+        jweObject.encrypt(encrypter);
 
         return jweObject.serialize();
     }
@@ -252,4 +154,25 @@ public class JwtTest {
         return signedJWT.getJWTClaimsSet();
     }
 
+    private static String produceSignedJwt(
+            JWSAlgorithm algorithm, JWSSigner signer) throws JOSEException {
+
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader(algorithm),
+                generateJWTClaimsSet());
+
+        signedJWT.sign(signer);
+
+        return signedJWT.serialize();
+    }
+
+    private static JWTClaimsSet consumeSignedJwt(String jwtString, JWSVerifier verifier)
+            throws ParseException, JOSEException {
+
+        SignedJWT signedJWT = SignedJWT.parse(jwtString);
+
+        assertThat(signedJWT.verify(verifier), is(true));
+
+        return signedJWT.getJWTClaimsSet();
+    }
 }

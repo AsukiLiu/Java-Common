@@ -1,5 +1,7 @@
 package org.asuki.tool.nimbusds.jwt;
 
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.crypto.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.crypto.KeyGenerator;
@@ -68,4 +70,15 @@ public final class Util {
         return new ECParameterSpec(curve, generator, order, cofactor);
     }
 
+    public static Object[][] data() throws Exception {
+        byte[] sharedSecret = Util.generateSharedSecret(32);
+        Pair<RSAPublicKey, RSAPrivateKey> rsaKeyPair = Util.generateRsaKeyPair();
+//        Pair<ECPublicKey, ECPrivateKey> ecKeyPair = Util.generateEcKeyPair();
+
+        return new Object[][]{
+                {JWSAlgorithm.HS256, new MACSigner(sharedSecret), new MACVerifier(sharedSecret)},
+                {JWSAlgorithm.RS256, new RSASSASigner(rsaKeyPair.getRight()), new RSASSAVerifier(rsaKeyPair.getLeft())},
+//                {JWSAlgorithm.ES256, new ECDSASigner(ecKeyPair.getRight()), new ECDSAVerifier(ecKeyPair.getLeft())},
+        };
+    }
 }

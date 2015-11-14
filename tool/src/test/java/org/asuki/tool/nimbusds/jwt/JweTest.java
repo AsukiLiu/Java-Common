@@ -7,7 +7,6 @@ import org.testng.annotations.Test;
 
 import java.text.ParseException;
 
-import static java.lang.System.out;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -19,31 +18,30 @@ public class JweTest {
     public void testWithSharedKeyEncryption() throws Exception {
         byte[] sharedSecret = Util.generateSharedSecret(16);
 
-        String jweString = produceEncryptedJwe(sharedSecret);
-        out.println(jweString);
+        String jweString = produceEncryptedJwe(new DirectEncrypter(sharedSecret));
 
-        JWEObject jweObject = consumeEncryptedJwe(jweString, sharedSecret);
+        JWEObject jweObject = consumeEncryptedJwe(jweString, new DirectDecrypter(sharedSecret));
 
         assertThat(jweObject.getPayload().toString(), is(PAYLOAD));
     }
 
-    private static String produceEncryptedJwe(byte[] sharedSecret) throws JOSEException {
-        JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM);
+    private static String produceEncryptedJwe(JWEEncrypter encrypter) throws JOSEException {
+        JWEObject jweObject = new JWEObject(
+                new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM),
+                new Payload(PAYLOAD));
 
-        Payload payload = new Payload(PAYLOAD);
-
-        JWEObject jweObject = new JWEObject(header, payload);
-        jweObject.encrypt(new DirectEncrypter(sharedSecret));
+        jweObject.encrypt(encrypter);
 
         return jweObject.serialize();
     }
 
-    private static JWEObject consumeEncryptedJwe(String jweString, byte[] sharedSecret) throws JOSEException, ParseException {
+    private static JWEObject consumeEncryptedJwe(String jweString, JWEDecrypter decrypter)
+            throws JOSEException, ParseException {
+
         JWEObject jweObject = JWEObject.parse(jweString);
 
-        jweObject.decrypt(new DirectDecrypter(sharedSecret));
+        jweObject.decrypt(decrypter);
 
         return jweObject;
     }
-
 }
