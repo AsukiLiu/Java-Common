@@ -1,28 +1,22 @@
 package org.asuki.tool.nimbusds.jwt;
 
-import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.*;
-import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.ECFieldFp;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.ECPoint;
-import java.security.spec.EllipticCurve;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
 import static java.lang.System.out;
-import static java.math.BigInteger.ZERO;
-import static java.math.BigInteger.valueOf;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -62,33 +56,22 @@ public final class Util {
             throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
         KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("EC");
-        keyGenerator.initialize(generateECParameterSpec());
-//        keyGenerator.initialize(571);
+        keyGenerator.initialize(256);
 
         KeyPair keyPair = keyGenerator.generateKeyPair();
 
         return Pair.of((ECPublicKey) keyPair.getPublic(), (ECPrivateKey) keyPair.getPrivate());
     }
 
-    private static ECParameterSpec generateECParameterSpec() {
-
-        EllipticCurve curve = new EllipticCurve(new ECFieldFp(valueOf(5L)), ZERO, valueOf(4L));
-        ECPoint generator = new ECPoint(ZERO, valueOf(2L));
-        BigInteger order = valueOf(5L);
-        int cofactor = 10;
-
-        return new ECParameterSpec(curve, generator, order, cofactor);
-    }
-
     public static Object[][] data() throws Exception {
         byte[] sharedSecret = Util.generateSharedSecret(32);
         Pair<RSAPublicKey, RSAPrivateKey> rsaKeyPair = Util.generateRsaKeyPair();
-//        Pair<ECPublicKey, ECPrivateKey> ecKeyPair = Util.generateEcKeyPair();
+        Pair<ECPublicKey, ECPrivateKey> ecKeyPair = Util.generateEcKeyPair();
 
         return new Object[][]{
                 {JWSAlgorithm.HS256, new MACSigner(sharedSecret), new MACVerifier(sharedSecret)},
                 {JWSAlgorithm.RS256, new RSASSASigner(rsaKeyPair.getRight()), new RSASSAVerifier(rsaKeyPair.getLeft())},
-//                {JWSAlgorithm.ES256, new ECDSASigner(ecKeyPair.getRight()), new ECDSAVerifier(ecKeyPair.getLeft())},
+                {JWSAlgorithm.ES256, new ECDSASigner(ecKeyPair.getRight()), new ECDSAVerifier(ecKeyPair.getLeft())},
         };
     }
 
@@ -112,5 +95,33 @@ public final class Util {
         out.println(jwtClaims.toJSONObject());
 
         return jwtClaims;
+    }
+
+    public static Class<?> parseJOSEObject(String input) throws ParseException {
+        JOSEObject joseObject = JOSEObject.parse(input);
+
+        if (joseObject instanceof PlainObject) {
+            return PlainObject.class;
+        } else if (joseObject instanceof JWSObject) {
+            return JWSObject.class;
+        } else if (joseObject instanceof JWEObject) {
+            return JWEObject.class;
+        }
+
+        return null;
+    }
+
+    public static Class<?> parseJWT(String input) throws ParseException {
+        JWT jwt = JWTParser.parse(input);
+
+        if (jwt instanceof PlainJWT) {
+            return PlainJWT.class;
+        } else if (jwt instanceof SignedJWT) {
+            return SignedJWT.class;
+        } else if (jwt instanceof EncryptedJWT) {
+            return EncryptedJWT.class;
+        }
+
+        return null;
     }
 }

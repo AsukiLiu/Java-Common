@@ -21,6 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <jackson.version>2.3.2</jackson.version>
+        <bouncycastle.version>1.47</bouncycastle.version>
     </properties>
 
     <dependencyManagement>
