@@ -8,8 +8,8 @@ import org.testng.annotations.Test;
 
 import java.text.ParseException;
 
-import static org.asuki.tool.nimbusds.jwt.Util.assertJWTClaimsSet;
-import static org.asuki.tool.nimbusds.jwt.Util.generateJWTClaimsSet;
+import static org.asuki.tool.nimbusds.jwt.JwtUtil.assertJWTClaimsSet;
+import static org.asuki.tool.nimbusds.jwt.JwtUtil.generateJWTClaimsSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -28,7 +28,7 @@ public class JwtTest {
 
     @DataProvider
     private Object[][] data() throws Exception {
-        return Util.data();
+        return JwtUtil.data();
     }
 
     private static String produceSignedJwt(

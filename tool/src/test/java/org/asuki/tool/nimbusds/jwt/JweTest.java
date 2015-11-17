@@ -13,8 +13,8 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 
-import static org.asuki.tool.nimbusds.jwt.Util.assertJWTClaimsSet;
-import static org.asuki.tool.nimbusds.jwt.Util.generateJWTClaimsSet;
+import static org.asuki.tool.nimbusds.jwt.JwtUtil.assertJWTClaimsSet;
+import static org.asuki.tool.nimbusds.jwt.JwtUtil.generateJWTClaimsSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -24,7 +24,7 @@ public class JweTest {
 
     @Test
     public void testWithSharedKeyEncryption() throws Exception {
-        byte[] sharedSecret = Util.generateSharedSecret(16);
+        byte[] sharedSecret = JwtUtil.generateSharedSecret(16);
 
         String jweString = produceEncryptedJwe(new DirectEncrypter(sharedSecret));
 
@@ -35,7 +35,7 @@ public class JweTest {
 
     @Test
     public void testWithRsaEncryption() throws Exception {
-        Pair<RSAPublicKey, RSAPrivateKey> keyPair = Util.generateRsaKeyPair();
+        Pair<RSAPublicKey, RSAPrivateKey> keyPair = JwtUtil.generateRsaKeyPair();
 
         String jwtString = produceEncryptedJwt(keyPair.getLeft());
 
@@ -46,7 +46,7 @@ public class JweTest {
 
     @Test
     public void testWithAesEncryption() throws Exception {
-        SecretKey secretKey = Util.generateSecretKey();
+        SecretKey secretKey = JwtUtil.generateSecretKey();
 
         String jweString = produceEncryptedJwe(secretKey);
 

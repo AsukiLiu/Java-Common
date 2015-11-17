@@ -26,7 +26,7 @@ public class JwsTest {
 
     @DataProvider
     private Object[][] data() throws Exception {
-        return Util.data();
+        return JwtUtil.data();
     }
 
     private static String produceSignedJws(

@@ -21,8 +21,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public final class Util {
-    private Util() {
+public final class JwtUtil {
+    private JwtUtil() {
     }
 
     private static final String SUBJECT = "andy";
@@ -64,9 +64,9 @@ public final class Util {
     }
 
     public static Object[][] data() throws Exception {
-        byte[] sharedSecret = Util.generateSharedSecret(32);
-        Pair<RSAPublicKey, RSAPrivateKey> rsaKeyPair = Util.generateRsaKeyPair();
-        Pair<ECPublicKey, ECPrivateKey> ecKeyPair = Util.generateEcKeyPair();
+        byte[] sharedSecret = JwtUtil.generateSharedSecret(32);
+        Pair<RSAPublicKey, RSAPrivateKey> rsaKeyPair = JwtUtil.generateRsaKeyPair();
+        Pair<ECPublicKey, ECPrivateKey> ecKeyPair = JwtUtil.generateEcKeyPair();
 
         return new Object[][]{
                 {JWSAlgorithm.HS256, new MACSigner(sharedSecret), new MACVerifier(sharedSecret)},
