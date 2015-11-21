@@ -5,15 +5,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.PropertyFilter;
-import com.fasterxml.jackson.databind.ser.PropertyWriter;
+import com.fasterxml.jackson.databind.ser.*;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import lombok.AllArgsConstructor;
@@ -25,6 +20,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static java.lang.System.out;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -161,9 +157,9 @@ public class Jackson2MarshallingTest {
 
         Item item = new Item(1, "ItemA", new User(2, "UserA"));
 
-//        SimpleModule module = new SimpleModule();
-//        module.addSerializer(Item.class, new ItemSerializer());
-//        mapper.registerModule(module);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Item.class, new ItemSerializer());
+        mapper.registerModule(module);
 
         String itemAsString = mapper.writeValueAsString(item);
         out.println(itemAsString);
@@ -179,6 +175,55 @@ public class Jackson2MarshallingTest {
             jgen.writeStringField("itemName", value.getItemName());
             jgen.writeNumberField("owner", value.getOwner().getId());
             jgen.writeEndObject();
+        }
+    }
+
+    @Test
+    public void testCustomSerializerFactory() throws Exception {
+        User user = new User(1, "Andy");
+
+        SerializerFactory serializerFactory = BeanSerializerFactory.instance
+                .withSerializerModifier(new CustomBeanSerializerModifier());
+
+        mapper.setSerializerFactory(serializerFactory);
+
+        String userAsString = mapper.writeValueAsString(user);
+        out.println(userAsString);
+
+        assertThat(userAsString, containsString("ANDY"));
+    }
+
+    private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
+
+        @Override
+        public List<BeanPropertyWriter> changeProperties(
+                SerializationConfig config, BeanDescription beanDesc,
+                List<BeanPropertyWriter> beanProperties) {
+
+            for (int i = 0, size = beanProperties.size(); i < size; i++) {
+                BeanPropertyWriter writer = beanProperties.get(i);
+                if (writer.getName().equals("name")) {
+                    beanProperties.set(i, new UpperCasingWriter(writer));
+                    break;
+                }
+            }
+
+            return beanProperties;
+        }
+    }
+
+    private static class UpperCasingWriter extends BeanPropertyWriter {
+
+        public UpperCasingWriter(BeanPropertyWriter writer) {
+            super(writer);
+        }
+
+        @Override
+        public void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov)
+                throws Exception {
+
+            String name = ((User) bean).getName();
+            gen.writeStringField("name", (name == null) ? "" : name.toUpperCase());
         }
     }
 }

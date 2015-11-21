@@ -1,7 +1,9 @@
 package org.asuki.tool.jackson.model;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.*;
+import org.asuki.tool.jackson.Jackson2ViewTest.Views;
 
 @Getter
 @Setter
@@ -12,5 +14,6 @@ import lombok.*;
 public class User {
     private int id;
 
+    @JsonView(Views.Public.class)
     private String name;
 }

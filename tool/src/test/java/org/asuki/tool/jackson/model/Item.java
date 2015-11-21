@@ -1,9 +1,8 @@
 package org.asuki.tool.jackson.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.*;
-import org.asuki.tool.jackson.Jackson2MarshallingTest.ItemSerializer;
+import org.asuki.tool.jackson.Jackson2ViewTest.Views;
 //import org.asuki.tool.jackson.Jackson2UnmarshallingTest.ItemDeserializer;
 
 @Getter
@@ -12,9 +11,14 @@ import org.asuki.tool.jackson.Jackson2MarshallingTest.ItemSerializer;
 @NoArgsConstructor
 @AllArgsConstructor
 //@JsonDeserialize(using = ItemDeserializer.class)
-@JsonSerialize(using = ItemSerializer.class)
+//@JsonSerialize(using = ItemSerializer.class)
 public class Item {
+    @JsonView(Views.Public.class)
     private int id;
+
+    @JsonView(Views.Public.class)
     private String itemName;
+
+    @JsonView(Views.Internal.class)
     private User owner;
 }
