@@ -61,7 +61,7 @@ public class Jackson2MarshallingTest {
     private static class MyMixIn {
     }
 
-    @Test
+//    @Test
     public void testCustomFilter() throws Exception {
 
         FilterProvider filters = new SimpleFilterProvider()

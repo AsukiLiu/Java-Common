@@ -11,7 +11,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonFilter("myFilter")
+//@JsonFilter("myFilter")
 //@JsonInclude(Include.NON_NULL)
 //@JsonIgnoreProperties(value = { "intValue" })
 //@JsonIgnoreProperties(ignoreUnknown = true)
