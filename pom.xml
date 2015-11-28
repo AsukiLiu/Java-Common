@@ -22,6 +22,7 @@
         <java.version>1.8</java.version>
         <jackson.version>2.6.3</jackson.version>
         <bouncycastle.version>1.47</bouncycastle.version>
+        <lucene.version>4.6.1</lucene.version>
     </properties>
 
     <dependencyManagement>
