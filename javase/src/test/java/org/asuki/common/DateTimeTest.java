@@ -7,16 +7,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
-import java.time.Clock;
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoField;
@@ -76,6 +67,10 @@ public class DateTimeTest {
                 .withLocale(Locale.JAPAN);
 
         out.println(LocalTime.parse("22:45", formatter));
+
+        LocalTime time = LocalTime.now();
+        LocalTime newTime = time.plusHours(2);
+        out.println(newTime);
     }
 
     @Test
@@ -90,6 +85,9 @@ public class DateTimeTest {
         LocalDate yesterday = tomorrow.minusDays(2);
         out.println(yesterday);
 
+        out.printf("Year: %d, Month: %d, Day: %d %n",
+                today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+
         LocalDate day = LocalDate.of(2014, Month.APRIL, 25);
         DayOfWeek dayOfWeek = day.getDayOfWeek();
         out.println(dayOfWeek);
@@ -97,7 +95,21 @@ public class DateTimeTest {
         DateTimeFormatter formatter = ofLocalizedDate(FormatStyle.MEDIUM)
                 .withLocale(Locale.GERMAN);
 
-        out.println(LocalDate.parse("25.04.2014", formatter)); // 2014-04-25
+        // 2014-04-25
+        out.println(LocalDate.parse("25.04.2014", formatter));
+        out.println(LocalDate.parse("20140425", DateTimeFormatter.BASIC_ISO_DATE));
+
+        LocalDate dateOfBirth = LocalDate.of(2010, 02, 15);
+        MonthDay birthday = MonthDay.of(dateOfBirth.getMonth(), dateOfBirth.getDayOfMonth());
+        MonthDay currentMonthDay = MonthDay.from(today);
+        out.println(currentMonthDay.equals(birthday));
+
+        YearMonth currentYearMonth = YearMonth.now();
+        out.printf("%s(%d)%n", currentYearMonth, currentYearMonth.lengthOfMonth());
+        YearMonth creditCardExpiry = YearMonth.of(2018, Month.FEBRUARY);
+        out.printf("Credit card expires on %s %n", creditCardExpiry);
+
+        out.println(today.isLeapYear());
     }
 
     @Test
@@ -138,5 +150,14 @@ public class DateTimeTest {
 
         Duration duration = Duration.between(from, to);
         assertThat(duration.toDays(), is(365L));
+    }
+
+    @Test
+    public void testPeriod() {
+        LocalDate today = LocalDate.now();
+        LocalDate java8Release = LocalDate.of(2014, Month.MARCH, 18);
+
+        Period period = Period.between(today, java8Release);
+        out.println(period.getMonths());
     }
 }

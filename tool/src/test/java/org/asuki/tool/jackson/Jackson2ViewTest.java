@@ -69,7 +69,8 @@ public class Jackson2ViewTest {
         User user = mapper
                 .readerWithView(Views.Public.class)
 //                .readerWithView(Views.Internal.class)
-                .withType(User.class)
+                .forType(User.class)
+//                .withType(User.class)
                 .readValue(json);
 
         out.println(user);
