@@ -12,6 +12,7 @@
     <description>Demo of Java technologies.</description>
 
     <modules>
+        <module>algorithm-datastructure</module>
         <module>design-pattern</module>
         <module>javase</module>
         <module>tool</module>
