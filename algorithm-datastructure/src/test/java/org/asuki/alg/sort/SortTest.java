@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 import static org.asuki.alg.sort.Bucket.bucketSort;
+import static org.asuki.alg.sort.Quick.quickSort;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -26,11 +27,17 @@ public class SortTest {
         Consumer<int[]> bucketSort = array -> bucketSort(array, 20);
         Consumer<int[]> bubbleSort1 = Bubble::bubbleSort1;
         Consumer<int[]> bubbleSort2 = Bubble::bubbleSort2;
+        Consumer<int[]> quickSort = array -> quickSort(array, 0, array.length - 1);
+        Consumer<int[]> selectSort = Select::selectSort;
+        Consumer<int[]> insertSort = Insert::insertSort;
 
         return new Object[][]{
                 {bucketSort},
                 {bubbleSort1},
                 {bubbleSort2},
+                {quickSort},
+                {selectSort},
+                {insertSort},
         };
     }
 }
